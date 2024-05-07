@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d2f7ff82-6939-4195-a747-2dea7ef27651" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="dfa90ff9-edfb-4e6e-b159-de08e720298a" />
+	<flow name="array-listFlow" doc:id="7f6e7a32-7796-4a80-9537-3ce37dd4227c" >
+		<http:listener doc:name="Listener" doc:id="feb498b8-5e6d-4eda-8874-443a2db5c460" config-ref="HTTP_Listener_config" path="array" allowedMethods="POST"/>
+		<logger level="INFO" doc:name="START" doc:id="46434a90-fd5f-448c-a023-63b8155014ab" message='"START"' />
+		<foreach doc:name="For Each" doc:id="ebee1964-b1a6-4ab3-934b-f931823ba397" >
+			<try doc:name="Try" doc:id="a9c8e7a8-567e-469b-b4bf-f5a143b80504" >
+				<set-payload value="#[payload as Number]" doc:name="Set Payload" doc:id="72e8c2c9-5299-4429-adb0-7925e826fe51" />
+				<file:write doc:name="Write" doc:id="0a2a69bf-76e3-4783-8e85-a5235a616887" config-ref="File_Config" path="C:\Users\Quant Systems\Desktop\suc.txt" mode="APPEND">
+					<file:content ><![CDATA[#[%dw 2.0
+output application/java
+---
+payload ++"\n"]]]></file:content>
+				</file:write>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="caecad5a-36f4-491c-884b-1e88b6a49a38" >
+						<file:write doc:name="Write" doc:id="dc920ca2-489e-46b9-bb4b-0f484ff62314" config-ref="File_Config" path="C:\Users\Quant Systems\Desktop\failure.txt" mode="APPEND">
+							<file:content ><![CDATA[#[%dw 2.0
+output application/java
+---
+payload ++"\n"]]]></file:content>
+						</file:write>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</foreach>
+		<logger level="INFO" doc:name="END" doc:id="ec590473-f0ad-4037-8fa4-90d3f077608d" message='"END"'/>
+	</flow>
+</mule>
